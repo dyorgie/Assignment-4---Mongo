@@ -1,19 +1,65 @@
-const mongoose = require("mongoose");
+const express = require("express");
 
-// Define the Product schema
+const CartItem = require("../models/cartModel");
 
-const productSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+const Product = require("../models/productModel"); // Make sure to import your Product model
 
-  price: { type: Number, required: true },
+const router = express.Router();
 
-  description: { type: String },
+// Get Cart
 
-  // Add other fields as necessary
+router.get("/", async (req, res) => {
+  try {
+    const cartItems = await CartItem.find().populate("productId"); // Populate to get product details
+
+    res.json(cartItems);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
-// Register the model with Mongoose
+// Remove from Cart
 
-const Product = mongoose.model("Product", productSchema);
+router.post("/remove", async (req, res) => {
+  const { productId } = req.body;
 
-module.exports = Product; // Export the model
+  try {
+    await CartItem.deleteOne({ productId }); // Remove item by productId
+
+    const cartItems = await CartItem.find().populate("productId");
+
+    res.json(cartItems);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add to Cart
+
+router.post("/add", async (req, res) => {
+  const { productId } = req.body;
+
+  try {
+    const existingItem = await CartItem.findOne({ productId });
+
+    if (existingItem) {
+      existingItem.quantity += 1;
+
+      await existingItem.save();
+    } else {
+      const newCartItem = new CartItem({ productId });
+
+      await newCartItem.save();
+    }
+
+    // Return updated cart
+
+    const cartItems = await CartItem.find().populate("productId");
+
+    res.json(cartItems);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+module.exports = router;
