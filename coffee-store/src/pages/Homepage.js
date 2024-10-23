@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import ProductCard from "../components/ProductCard";
 
-const HomePage = ({ addToCart }) => {
+const Homepage = ({ addToCart }) => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -32,4 +32,4 @@ const HomePage = ({ addToCart }) => {
   );
 };
 
-export default HomePage;
+export default Homepage;
